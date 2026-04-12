@@ -1,17 +1,36 @@
 {
   "name": "tubes-apb-be",
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot src/index.ts",
+    "lint": "bunx eslint .",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun run src/db/migrate.ts",
+    "db:seed": "bun run src/db/seed.ts",
+    "typecheck": "bunx tsc --noEmit"
   },
   "dependencies": {
     "@hono/swagger-ui": "^0.6.1",
     "@hono/zod-openapi": "^1.2.4",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.1",
+    "drizzle-orm": "^0.45.2",
     "hono": "^4.12.12",
+    "jsonwebtoken": "^9.0.3",
+    "nodemailer": "^8.0.5",
+    "postgres": "^3.4.9",
     "swagger-ui-dist": "^5.32.2",
+    "typescript": "^6.0.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/bun": "latest",
-    "@types/swagger-ui-dist": "^3.30.6"
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/nodemailer": "^8.0.0",
+    "@types/swagger-ui-dist": "^3.30.6",
+    "drizzle-kit": "^0.31.10",
+    "eslint": "^10.2.0",
+    "globals": "^17.5.0",
+    "typescript-eslint": "^8.58.1"
   }
 }

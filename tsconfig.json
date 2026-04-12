@@ -1,8 +1,13 @@
 {
   "compilerOptions": {
     "strict": true,
+    "skipLibCheck": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
+    "types": ["bun"],
     "paths": {
       "@/*": ["./src/*"]
     }
