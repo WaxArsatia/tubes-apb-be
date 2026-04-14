@@ -1,161 +1,95 @@
 # tubes-apb-be
 
-Backend service for Tubes Aplikasi Perangkat Bergerak (APB) - a mobile app for managing personal finances.
+Backend API for the APB finance app.
 
-Built with:
+## Overview
 
-- Bun
-- Hono + Zod OpenAPI
-- PostgreSQL
-- Drizzle ORM
+This service provides authentication, dashboard summary, and profile settings APIs. It exposes an OpenAPI spec and Swagger UI for testing.
 
 ## Features
 
-- JWT auth with access token and refresh token rotation
-- Forgot-password OTP flow via email (4-digit OTP)
-- Authenticated profile endpoint (`/auth/me`)
-- Dashboard summary from real transactions data
-- Profile update with multipart image upload
-- OpenAPI docs and Swagger UI
-- Standard response envelope for success and error responses
+- JWT authentication with access token + refresh token flow
+- Refresh token rotation and token revocation on logout/password change
+- Forgot password flow using 4-digit OTP
+- Authenticated user profile endpoint
+- Dashboard summary from user transaction data
+- Profile update endpoint with multipart image upload (image only, max 10MB)
+- Standard success/error envelope responses
 
-## Prerequisites
+## Tech Stack
 
-- Bun (latest stable)
-- Docker and Docker Compose
-- PostgreSQL runs from Docker Compose in local development
+- Bun + TypeScript
+- Hono + @hono/zod-openapi + @hono/swagger-ui
+- PostgreSQL
+- Drizzle ORM + drizzle-kit
+- bcryptjs, jsonwebtoken, nodemailer, zod
 
-## Quick Start
+## Setup and Run
 
-1. Install dependencies:
+1. Install dependencies.
 
 ```sh
 bun install
 ```
 
-2. Copy environment file:
+2. Copy environment template.
 
 ```sh
 cp .env.example .env
 ```
 
-3. Start PostgreSQL:
+3. Start PostgreSQL container.
 
 ```sh
 docker compose up -d postgres
 ```
 
-4. Generate migration (first time or after schema changes):
-
-```sh
-bun run db:generate
-```
-
-5. Apply migration:
+4. Apply database migrations.
 
 ```sh
 bun run db:migrate
 ```
 
-6. Seed demo data:
+5. (Optional) Seed demo data.
 
 ```sh
 bun run db:seed
 ```
 
-7. Start the server:
+6. Start development server.
 
 ```sh
 bun run dev
 ```
 
-Server URL:
+Default local URLs:
 
-- http://localhost:3000
-
-## API Docs
-
+- API: http://localhost:3000
 - OpenAPI JSON: http://localhost:3000/doc
 - Swagger UI: http://localhost:3000/ui
 
-## Response Format
+## Environment
 
-Success envelope:
+From current code/config:
 
-```json
-{
-  "success": true,
-  "message": "Operation successful",
-  "data": {}
-}
-```
+- Required: `DATABASE_URL`
+- App config: `PORT`, `ACCESS_TOKEN_EXPIRES_IN`, `REFRESH_TOKEN_EXPIRES_IN`, `UPLOAD_DIR`, `PUBLIC_BASE_URL`
+- JWT secrets: `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` (optional in dev; defaults exist)
+- SMTP (for real OTP email delivery): `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
+- Docker Postgres vars: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
 
-Error envelope:
-
-```json
-{
-  "success": false,
-  "message": "Validation failed",
-  "errors": {
-    "field": ["message"]
-  }
-}
-```
-
-## Environment Variables
-
-Configured in `.env`.
-
-Required:
-
-- `DATABASE_URL`
-- `JWT_ACCESS_SECRET`
-- `JWT_REFRESH_SECRET`
-
-Common app config:
-
-- `PORT` (default: `3000`)
-- `ACCESS_TOKEN_EXPIRES_IN` (default: `30d`)
-- `REFRESH_TOKEN_EXPIRES_IN` (default: `90d`)
-- `UPLOAD_DIR` (default: `uploads`)
-- `PUBLIC_BASE_URL` (default: `http://localhost:<PORT>`)
-
-SMTP config for OTP email:
-
-- `SMTP_HOST`
-- `SMTP_PORT`
-- `SMTP_USER`
-- `SMTP_PASS`
-- `SMTP_FROM`
-
-Postgres container config:
-
-- `POSTGRES_USER`
-- `POSTGRES_PASSWORD`
-- `POSTGRES_DB`
-
-See `.env.example` for full template values.
+If SMTP is not fully configured, OTP is logged to server output instead of sent by email.
 
 ## Scripts
 
-- `bun run dev` - start development server with hot reload
-- `bun run db:generate` - generate SQL migration from Drizzle schema
-- `bun run db:migrate` - apply migrations
-- `bun run db:seed` - seed demo data
-- `bun run typecheck` - run TypeScript checks
+- `bun run dev` - run API in hot-reload mode
+- `bun run lint` - lint source files
+- `bun run db:generate` - generate SQL migration files from schema
+- `bun run db:migrate` - run migrations
+- `bun run db:seed` - seed sample user and transactions
+- `bun run typecheck` - TypeScript type check
 
-Lint (without script):
-
-```sh
-bunx eslint .
-```
-
-## Seeded Demo Account
-
-- Email: `demo@example.com`
-- Password: `password123`
-
-## Endpoint Overview
+## API Endpoints
 
 Auth:
 
@@ -175,18 +109,11 @@ Dashboard:
 
 Settings:
 
-- `PATCH /settings/profile` (`multipart/form-data`)
+- `PATCH /settings/profile` (multipart/form-data)
 
 Health:
 
 - `GET /`
-
-## Uploads
-
-- Profile images are stored on local filesystem under `UPLOAD_DIR`
-- Static files are served from `/<UPLOAD_DIR>/...`
-- Max upload size: 10MB
-- Allowed file type category: `image/*`
 
 ## Project Structure
 
@@ -211,9 +138,12 @@ src/
 		health.route.ts
 		index.ts
 	index.ts
+drizzle/
+docs/
+docker-compose.yml
 ```
 
 ## Notes
 
-- This phase does not include automated tests yet.
-- If SMTP is not configured, OTP sending is logged for local development.
+- Seed user constants are defined in `src/db/seed.ts`.
+- No test suite is configured in `package.json`.
