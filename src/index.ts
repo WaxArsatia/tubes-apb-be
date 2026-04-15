@@ -2,10 +2,8 @@ import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
-import { ZodError } from "zod";
 
 import { env } from "@/common/config/env";
-import { AppError } from "@/common/errors/app-error";
 import { errorHandler } from "@/common/errors/error-handler";
 import { errorEnvelope } from "@/common/http/envelope";
 import { registerRoutes } from "@/routes";
@@ -127,23 +125,6 @@ app.use(
 );
 app.use("*", errorHandler);
 app.use(`/${env.UPLOAD_DIR}/*`, serveStatic({ root: "./" }));
-
-app.onError((error, c) => {
-  if (error instanceof AppError) {
-    return c.json(
-      errorEnvelope(error.message, error.errors),
-      error.status as 400,
-    );
-  }
-
-  if (error instanceof ZodError) {
-    const fields = issuesToFieldErrors(error.issues);
-    return c.json(errorEnvelope("Validation failed", fields), 422);
-  }
-
-  console.error(error);
-  return c.json(errorEnvelope("Internal server error"), 500);
-});
 
 registerRoutes(app);
 

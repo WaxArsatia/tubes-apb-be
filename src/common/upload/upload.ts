@@ -46,5 +46,7 @@ export const saveProfilePicture = async (file: File) => {
 
   await Bun.write(relativePath, file);
 
-  return `${env.PUBLIC_BASE_URL}/${relativePath}`;
+  const publicBaseUrl = env.PUBLIC_BASE_URL.replace(/\/+$/, "");
+
+  return `${publicBaseUrl}/${relativePath}`;
 };

@@ -15,13 +15,24 @@ const parseNumber = (value: string, fallback: number) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const port = parseNumber(process.env.PORT ?? "3000", 3000);
+const parsePositiveInteger = (value: string, fallback: number) => {
+  const normalized = value.trim();
+
+  if (!/^[1-9]\d*$/.test(normalized)) {
+    return fallback;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isSafeInteger(parsed) ? parsed : fallback;
+};
+
+const port = parsePositiveInteger(process.env.PORT ?? "3000", 3000);
 
 export const env = {
   DATABASE_URL: readEnv("DATABASE_URL"),
   PORT: port,
-  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET ?? "dev-access-secret",
-  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET ?? "dev-refresh-secret",
+  JWT_ACCESS_SECRET: readEnv("JWT_ACCESS_SECRET"),
+  JWT_REFRESH_SECRET: readEnv("JWT_REFRESH_SECRET"),
   ACCESS_TOKEN_EXPIRES_IN: process.env.ACCESS_TOKEN_EXPIRES_IN ?? "30d",
   REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN ?? "90d",
   SMTP_HOST: process.env.SMTP_HOST,
@@ -35,5 +46,8 @@ export const env = {
   PUBLIC_BASE_URL:
     process.env.PUBLIC_BASE_URL ?? `http://localhost:${String(port)}`,
   MAX_UPLOAD_SIZE_BYTES: 10 * 1024 * 1024,
-  OTP_EXPIRES_MINUTES: 30,
+  OTP_EXPIRES_MINUTES: parsePositiveInteger(
+    process.env.OTP_EXPIRES_MINUTES ?? "30",
+    30,
+  ),
 } as const;
