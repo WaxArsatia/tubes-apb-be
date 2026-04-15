@@ -16,12 +16,14 @@ const parseNumber = (value: string, fallback: number) => {
 };
 
 const parsePositiveInteger = (value: string, fallback: number) => {
-  if (!/^\d+$/.test(value)) {
+  const normalized = value.trim();
+
+  if (!/^[1-9]\d*$/.test(normalized)) {
     return fallback;
   }
 
-  const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+  const parsed = Number(normalized);
+  return Number.isSafeInteger(parsed) ? parsed : fallback;
 };
 
 const port = parsePositiveInteger(process.env.PORT ?? "3000", 3000);
