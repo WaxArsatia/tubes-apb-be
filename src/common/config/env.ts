@@ -16,7 +16,11 @@ const parseNumber = (value: string, fallback: number) => {
 };
 
 const parsePositiveInteger = (value: string, fallback: number) => {
-  const parsed = Number.parseInt(value, 10);
+  if (!/^\d+$/.test(value)) {
+    return fallback;
+  }
+
+  const parsed = Number(value);
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 };
 
