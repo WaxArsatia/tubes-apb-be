@@ -74,7 +74,10 @@ export const ForgotPasswordSuccessSchema = createSuccessEnvelopeSchema(
   z
     .object({
       email: z.email(),
-      otpExpiresInMinutes: z.literal(env.OTP_EXPIRES_MINUTES),
+      otpExpiresInMinutes: z
+        .number()
+        .int()
+        .openapi({ example: env.OTP_EXPIRES_MINUTES }),
     })
     .openapi("ForgotPasswordData"),
 ).openapi("ForgotPasswordSuccess");
