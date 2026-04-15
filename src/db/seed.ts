@@ -4,14 +4,14 @@ import { hashPassword } from "@/common/auth/password";
 import { db, closeDatabaseConnection } from "@/db/client";
 import { transactions, users } from "@/db/schema";
 
-const DEMO_EMAIL = "waxarsatia@gmail.com";
+const DEMO_EMAIL = "demo@example.com";
 
 const seed = async () => {
   const existingUser = await db.query.users.findFirst({
     where: (table, { eq: equals }) => equals(table.email, DEMO_EMAIL),
   });
 
-  const passwordHash = await hashPassword("wax123456");
+  const passwordHash = await hashPassword("password123");
 
   const user =
     existingUser ??

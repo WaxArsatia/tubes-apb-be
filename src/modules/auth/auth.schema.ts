@@ -1,5 +1,6 @@
 import { z } from "@hono/zod-openapi";
 
+import { env } from "@/common/config/env";
 import {
   createSuccessEnvelopeSchema,
   ErrorEnvelopeSchema,
@@ -73,7 +74,7 @@ export const ForgotPasswordSuccessSchema = createSuccessEnvelopeSchema(
   z
     .object({
       email: z.email(),
-      otpExpiresInMinutes: z.literal(30),
+      otpExpiresInMinutes: z.literal(env.OTP_EXPIRES_MINUTES),
     })
     .openapi("ForgotPasswordData"),
 ).openapi("ForgotPasswordSuccess");

@@ -116,22 +116,32 @@ const sendOtpEmail = async (email: string, otp: string) => {
   });
 };
 
+type TokenBundle = {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: "Bearer";
+  expiresIn: number;
+};
+
 const createTokenBundle = async (userId: string) => {
   const accessToken = signAccessToken(userId);
   const refreshToken = signRefreshToken(userId);
   const refreshTokenHash = hashToken(refreshToken);
 
-  await authRepository.createRefreshToken({
+  const createdRefreshToken = await authRepository.createRefreshToken({
     userId,
     tokenHash: refreshTokenHash,
     expiresAt: new Date(Date.now() + refreshTokenLifetimeSeconds * 1000),
   });
 
   return {
-    accessToken,
-    refreshToken,
-    tokenType: "Bearer" as const,
-    expiresIn: getAccessTokenExpiresInSeconds(),
+    bundle: {
+      accessToken,
+      refreshToken,
+      tokenType: "Bearer" as const,
+      expiresIn: getAccessTokenExpiresInSeconds(),
+    } satisfies TokenBundle,
+    refreshTokenId: createdRefreshToken.id,
   };
 };
 
@@ -216,7 +226,8 @@ export const authService = {
       throw unauthorized("Invalid credentials");
     }
 
-    return createTokenBundle(user.id);
+    const { bundle } = await createTokenBundle(user.id);
+    return bundle;
   },
 
   async refreshToken(input: RefreshTokenInput) {
@@ -234,15 +245,10 @@ export const authService = {
       throw unauthorized("Invalid or expired refresh token");
     }
 
-    const newBundle = await createTokenBundle(tokenRecord.userId);
-    const replacementTokenHash = hashToken(newBundle.refreshToken);
-    const replacementRecord =
-      await authRepository.findRefreshTokenByHash(replacementTokenHash);
+    const { bundle: newBundle, refreshTokenId: replacementTokenId } =
+      await createTokenBundle(tokenRecord.userId);
 
-    await authRepository.revokeRefreshToken(
-      tokenRecord.id,
-      replacementRecord?.id,
-    );
+    await authRepository.revokeRefreshToken(tokenRecord.id, replacementTokenId);
 
     return newBundle;
   },
@@ -304,7 +310,7 @@ export const authService = {
 
     return {
       email: user.email,
-      otpExpiresInMinutes: 30 as const,
+      otpExpiresInMinutes: env.OTP_EXPIRES_MINUTES,
     };
   },
 
